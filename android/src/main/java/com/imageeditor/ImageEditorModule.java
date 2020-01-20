@@ -74,31 +74,31 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
   private static final int COMPRESS_QUALITY = 90;
 
   @SuppressLint("InlinedApi") private static final String[] EXIF_ATTRIBUTES = new String[] {
-    ExifInterface.TAG_APERTURE,
-    ExifInterface.TAG_DATETIME,
-    ExifInterface.TAG_DATETIME_DIGITIZED,
-    ExifInterface.TAG_EXPOSURE_TIME,
-    ExifInterface.TAG_FLASH,
-    ExifInterface.TAG_FOCAL_LENGTH,
-    ExifInterface.TAG_GPS_ALTITUDE,
-    ExifInterface.TAG_GPS_ALTITUDE_REF,
-    ExifInterface.TAG_GPS_DATESTAMP,
-    ExifInterface.TAG_GPS_LATITUDE,
-    ExifInterface.TAG_GPS_LATITUDE_REF,
-    ExifInterface.TAG_GPS_LONGITUDE,
-    ExifInterface.TAG_GPS_LONGITUDE_REF,
-    ExifInterface.TAG_GPS_PROCESSING_METHOD,
-    ExifInterface.TAG_GPS_TIMESTAMP,
-    ExifInterface.TAG_IMAGE_LENGTH,
-    ExifInterface.TAG_IMAGE_WIDTH,
-    ExifInterface.TAG_ISO,
-    ExifInterface.TAG_MAKE,
-    ExifInterface.TAG_MODEL,
-    ExifInterface.TAG_ORIENTATION,
-    ExifInterface.TAG_SUBSEC_TIME,
-    ExifInterface.TAG_SUBSEC_TIME_DIG,
-    ExifInterface.TAG_SUBSEC_TIME_ORIG,
-    ExifInterface.TAG_WHITE_BALANCE
+          ExifInterface.TAG_APERTURE,
+          ExifInterface.TAG_DATETIME,
+          ExifInterface.TAG_DATETIME_DIGITIZED,
+          ExifInterface.TAG_EXPOSURE_TIME,
+          ExifInterface.TAG_FLASH,
+          ExifInterface.TAG_FOCAL_LENGTH,
+          ExifInterface.TAG_GPS_ALTITUDE,
+          ExifInterface.TAG_GPS_ALTITUDE_REF,
+          ExifInterface.TAG_GPS_DATESTAMP,
+          ExifInterface.TAG_GPS_LATITUDE,
+          ExifInterface.TAG_GPS_LATITUDE_REF,
+          ExifInterface.TAG_GPS_LONGITUDE,
+          ExifInterface.TAG_GPS_LONGITUDE_REF,
+          ExifInterface.TAG_GPS_PROCESSING_METHOD,
+          ExifInterface.TAG_GPS_TIMESTAMP,
+          ExifInterface.TAG_IMAGE_LENGTH,
+          ExifInterface.TAG_IMAGE_WIDTH,
+          ExifInterface.TAG_ISO,
+          ExifInterface.TAG_MAKE,
+          ExifInterface.TAG_MODEL,
+          ExifInterface.TAG_ORIENTATION,
+          ExifInterface.TAG_SUBSEC_TIME,
+          ExifInterface.TAG_SUBSEC_TIME_DIG,
+          ExifInterface.TAG_SUBSEC_TIME_ORIG,
+          ExifInterface.TAG_WHITE_BALANCE
   };
 
   public ImageEditorModule(ReactApplicationContext reactContext) {
@@ -145,12 +145,12 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
 
     private void cleanDirectory(File directory) {
       File[] toDelete = directory.listFiles(
-          new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String filename) {
-              return filename.startsWith(TEMP_FILE_PREFIX);
-            }
-          });
+              new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String filename) {
+                  return filename.startsWith(TEMP_FILE_PREFIX);
+                }
+              });
       if (toDelete != null) {
         for (File file: toDelete) {
           file.delete();
@@ -174,14 +174,14 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
    */
   @ReactMethod
   public void cropImage(
-      String uri,
-      ReadableMap options,
-      Promise promise) {
+          String uri,
+          ReadableMap options,
+          Promise promise) {
     ReadableMap offset = options.hasKey("offset") ? options.getMap("offset") : null;
     ReadableMap size = options.hasKey("size") ? options.getMap("size") : null;
     if (offset == null || size == null ||
-        !offset.hasKey("x") || !offset.hasKey("y") ||
-        !size.hasKey("width") || !size.hasKey("height")) {
+            !offset.hasKey("x") || !offset.hasKey("y") ||
+            !size.hasKey("width") || !size.hasKey("height")) {
       throw new JSApplicationIllegalArgumentException("Please specify offset and size");
     }
     if (uri == null || uri.isEmpty()) {
@@ -189,28 +189,23 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
     }
 
     CropTask cropTask = new CropTask(
-        getReactApplicationContext(),
-        uri,
-        (int) offset.getDouble("x"),
-        (int) offset.getDouble("y"),
-        (int) size.getDouble("width"),
-        (int) size.getDouble("height"),
-        promise);
+            getReactApplicationContext(),
+            uri,
+            (int) offset.getDouble("x"),
+            (int) offset.getDouble("y"),
+            (int) size.getDouble("width"),
+            (int) size.getDouble("height"),
+            promise);
     if (options.hasKey("displaySize")) {
       ReadableMap targetSize = options.getMap("displaySize");
       cropTask.setTargetSize(
-        (int) targetSize.getDouble("width"),
-        (int) targetSize.getDouble("height"));
+              (int) targetSize.getDouble("width"),
+              (int) targetSize.getDouble("height"));
     }
     cropTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
   }
 
 
-  @ReactMethod
-  public void hideSplashScreen(Promise promise) {
-    SplashScreen.hide(getCurrentActivity());
-
-  }
 
   @ReactMethod
   public void getSize(String uri, final Promise promise) {
@@ -263,14 +258,20 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
 
 
   @ReactMethod
-  public void getBase64(String uri, final Promise promise) {
-    try {
-      Bitmap bmp = BitmapFactory.decodeStream(new java.net.URL(uri).openStream());
-      String base64String = ImageUtil.convert(bmp);
-      promise.resolve(base64String);
-    } catch (Exception e) {
-      promise.reject(e);
-    }
+  public void getBase64(final String uri, final Promise promise) {
+    AsyncTask.execute(new Runnable() {
+      @Override
+      public void run() {
+        //TODO your background code
+        try {
+          Bitmap bmp = BitmapFactory.decodeStream(new java.net.URL(uri).openStream());
+          String base64String = ImageUtil.convert(bmp);
+          promise.resolve(base64String);
+        } catch (Exception e) {
+          promise.reject(e);
+        }
+      }
+    });
   }
 
   @ReactMethod
@@ -568,22 +569,22 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
   }
 
 
-    /**
-     * Loads the bitmap resource from the file specified in imagePath.
-     */
-    private static Bitmap loadBitmapFromFile(Context context, Uri imageUri) throws IOException  {
-      // Decode the image bounds to find the size of the source image.
-      BitmapFactory.Options options = new BitmapFactory.Options();
-      options.inJustDecodeBounds = true;
-      loadBitmap(context, imageUri, options);
+  /**
+   * Loads the bitmap resource from the file specified in imagePath.
+   */
+  private static Bitmap loadBitmapFromFile(Context context, Uri imageUri) throws IOException  {
+    // Decode the image bounds to find the size of the source image.
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inJustDecodeBounds = true;
+    loadBitmap(context, imageUri, options);
 
-      // Set a sample size according to the image size to lower memory usage.
+    // Set a sample size according to the image size to lower memory usage.
 //    options.inSampleSize = calculateInSampleSize(options, newWidth, newHeight);
-      options.inJustDecodeBounds = false;
-      System.out.println(options.inSampleSize);
-      return loadBitmap(context, imageUri, options);
+    options.inJustDecodeBounds = false;
+    System.out.println(options.inSampleSize);
+    return loadBitmap(context, imageUri, options);
 
-    }
+  }
 
 
 
@@ -868,7 +869,3 @@ public class ImageEditorModule extends ReactContextBaseJavaModule {
     return newFile;
   }
 }
-
-
-
-
